@@ -1,0 +1,224 @@
+// Agencia CRM - Schema Prisma
+// Compativel com SQLite (dev) e PostgreSQL (producao).
+// Para producao, troque provider para "postgresql" e ajuste DATABASE_URL no .env.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Usuarios (admin e vendedores)
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    @default("SELLER") // ADMIN | SELLER
+  active       Boolean   @default(true)
+  monthlyGoal  Float     @default(0) // meta individual mensal (R$)
+  dailyGoal    Float     @default(0) // meta individual diaria (R$)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  leads        Lead[]
+  contacts     Contact[]
+  proposals    Proposal[]
+  sales        Sale[]
+  tasks        Task[]
+  dailyReports DailyReport[]
+  stageChanges LeadStageHistory[]
+  auditLogs    AuditLog[]
+  notifications Notification[]
+}
+
+model Lead {
+  id          String    @id @default(cuid())
+  name        String
+  company     String?
+  segment     String?
+  city        String?
+  state       String?
+  phone       String?
+  whatsapp    String?
+  email       String?
+  instagram   String?
+  website     String?
+  source      String    @default("Outro") // origem
+  service     String?   // servico de interesse
+  budget      Float?    // orcamento estimado
+  temperature String    @default("Frio") // Frio | Morno | Quente
+  qualification String  @default("Nao analisado") // Nao analisado | Nao qualificado | Qualificado | Prioritario
+  stage       String    @default("Lead cadastrado")
+  lostReason  String?
+  notes       String?
+  tags        String?   // separadas por virgula
+  lastContactAt DateTime?
+  nextContactAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  ownerId  String
+  owner    User   @relation(fields: [ownerId], references: [id])
+
+  contacts     Contact[]
+  proposals    Proposal[]
+  sales        Sale[]
+  tasks        Task[]
+  stageHistory LeadStageHistory[]
+
+  @@index([ownerId])
+  @@index([stage])
+}
+
+model LeadStageHistory {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  fromStage String
+  toStage   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+}
+
+// Registro de contato / tentativa de contato
+model Contact {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  channel   String   // WhatsApp, Ligacao, Instagram, E-mail, LinkedIn, Indicacao, Reuniao, Outro
+  type      String   @default("Primeiro contato") // Primeiro contato | Follow-up | Reuniao | Pos-venda
+  result    String   // Nao respondeu, Respondeu, Demonstrou interesse, Solicitou proposta, Agendou reuniao, Sem interesse, Contato invalido, Retornar depois
+  note      String?
+  nextAction String?
+  nextContactAt DateTime?
+  happenedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId, happenedAt])
+}
+
+model Proposal {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  service   String
+  value     Float
+  status    String   @default("Enviada") // Enviada | Em negociacao | Aceita | Recusada | Expirada
+  sentAt    DateTime @default(now())
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId, sentAt])
+}
+
+model Sale {
+  id            String   @id @default(cuid())
+  leadId        String
+  lead          Lead     @relation(fields: [leadId], references: [id])
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  service       String
+  totalValue    Float
+  downPayment   Float    @default(0)
+  receivedValue Float    @default(0)
+  paymentMethod String   @default("Pix")
+  installments  Int      @default(1)
+  paymentStatus String   @default("Pendente") // Pendente | Entrada paga | Parcialmente pago | Pago | Atrasado | Cancelado
+  soldAt        DateTime @default(now())
+  startAt       DateTime?
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  @@index([userId, soldAt])
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  title     String
+  dueAt     DateTime
+  done      Boolean  @default(false)
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+}
+
+model Goal {
+  id        String   @id @default(cuid())
+  scope     String   @default("TEAM") // TEAM | USER
+  userId    String?
+  month     Int      // 1-12
+  year      Int
+  monthlyValue Float @default(50000)
+  dailyValue   Float @default(2000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([scope, userId, month, year])
+}
+
+model DailyReport {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime
+  contacts  Int      @default(0)
+  newLeads  Int      @default(0)
+  qualified Int      @default(0)
+  replies   Int      @default(0)
+  meetings  Int      @default(0)
+  proposals Int      @default(0)
+  sales     Int      @default(0)
+  revenue   Float    @default(0)
+  difficulties String?
+  priorities   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // create | update | delete | stage_change | login
+  entity    String
+  entityId  String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}
