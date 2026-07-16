@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Avenir Next", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-body: ui-sans-serif, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bg: #F3F5F9;
+  --surface: #FFFFFF;
+  --line: #E4E8F0;
+  --text: #16233D;
+  --muted: #64748B;
+}
+.dark {
+  --bg: #0B1220;
+  --surface: #121C30;
+  --line: #22304D;
+  --text: #E7ECF5;
+  --muted: #8CA0BE;
+}
+
+html { font-family: var(--font-body); }
+body { background: var(--bg); color: var(--text); }
+
+@layer components {
+  .card { @apply rounded-2xl border shadow-card; background: var(--surface); border-color: var(--line); }
+  .label { @apply block text-xs font-semibold uppercase tracking-wide mb-1; color: var(--muted); }
+  .input {
+    @apply w-full rounded-lg border px-3 py-2 text-sm outline-none transition
+      focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500;
+    background: var(--surface); border-color: var(--line); color: var(--text);
+  }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700 shadow-sm; }
+  .btn-ghost { @apply btn border hover:bg-black/5 dark:hover:bg-white/5; border-color: var(--line); color: var(--text); }
+  .btn-danger { @apply btn bg-coral-500 text-white hover:bg-coral-600; }
+  .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold; }
+  .th { @apply px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider whitespace-nowrap; color: var(--muted); }
+  .td { @apply px-3 py-2.5 text-sm whitespace-nowrap; border-top: 1px solid var(--line); }
+  .muted { color: var(--muted); }
+  .hairline { border-color: var(--line); }
+}
+
+/* barra de progresso animada */
+.progress-fill { transition: width 900ms cubic-bezier(.22,1,.36,1); }
+
+::-webkit-scrollbar { height: 8px; width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
