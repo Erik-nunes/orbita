@@ -75,29 +75,7 @@ usuários da sua equipe, com metas individuais de cada um.
 
 ---
 
-
----
-
-## ☁️ Publicar na internet em 4 passos (Vercel + Neon — grátis)
-
-Este pacote já está configurado para PostgreSQL. A cada deploy, o build cria/atualiza
-as tabelas e garante o admin master automaticamente (`prisma db push` + seed idempotente).
-
-1. **Banco:** crie uma conta em https://neon.tech → New Project → copie a
-   *connection string* (começa com `postgresql://`).
-2. **Código no GitHub:** instale o app **GitHub Desktop** (https://desktop.github.com),
-   crie um repositório e arraste os arquivos desta pasta para ele → *Commit* → *Publish*.
-3. **Vercel:** em https://vercel.com entre com o GitHub → *Add New → Project* →
-   importe o repositório → em **Environment Variables** adicione:
-   - `DATABASE_URL` = a connection string do Neon
-   - `NEXTAUTH_SECRET` = um texto longo e aleatório (ex.: gere em https://generate-secret.vercel.app/32)
-   - `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` = seu acesso master
-   → clique em **Deploy**.
-4. **Endereço final:** após o deploy, adicione a variável `NEXTAUTH_URL` =
-   `https://SEU-PROJETO.vercel.app` e faça *Redeploy*. Pronto: mande o link para a
-   equipe e crie os vendedores em **Equipe e metas**.
-
-## 🐘 Produção com PostgreSQL — detalhes
+## 🐘 Produção com PostgreSQL (Vercel + Supabase/Neon)
 
 1. Crie um banco PostgreSQL (Supabase, Neon, Railway...).
 2. Em `prisma/schema.prisma`, troque o provider:
